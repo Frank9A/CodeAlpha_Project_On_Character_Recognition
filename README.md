@@ -18,3 +18,4 @@ This project was built as part of the CodeAlpha Machine Learning Internship.
 * Flatten Layer (28x28 to 784 pixels)
 * Dense Hidden Layer (128 neurons, ReLU activation)
 * Dense Output Layer (10 neurons, Softmax activation)
+* CNN with Conv2D and MaxPooling2D

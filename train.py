@@ -1,48 +1,42 @@
 import tensorflow as tf
-import matplotlib.pyplot as plt
+from tensorflow.keras.datasets import mnist
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
+from tensorflow.keras.utils import to_categorical
 
-#load the dataset of handwritten numbers (0-9)
-mnist = tf.keras.datasets.mnist
+# 1. Load the MNIST data
+(X_train, y_train), (X_test, y_test) = mnist.load_data()
 
-#Unpack the dataset int training and testing sets
-(x_train, y_train), (x_test, y_test) = mnist.load_data()
+# 2. Reshape for a CNN (Add the "1" for the grayscale color channel)
+# We also divide by 255 to normalize the pixel values between 0 and 1
+X_train = X_train.reshape(-1, 28, 28, 1) / 255.0
+X_test = X_test.reshape(-1, 28, 28, 1) / 255.0
 
-#lets actually look at the very first image!
-plt.imshow(x_train[0], cmap='gray')
-plt.show()
+# Convert labels to One-Hot Encoding
+y_train = to_categorical(y_train)
+y_test = to_categorical(y_test)
 
-# Scale the pixel values to be between 0 and 1
-x_train = x_train /255.0
-x_test = x_test / 255.0
-
-# Build the layers of the Neural Network
-model = tf.keras.models.Sequential([
-    #Layer 1: Flatten the 28x28 image grid into a single line of pixels
-    tf.keras.layers.Flatten(input_shape=(28, 28)),
-
-    # Layer 2: The "hidden" thinking layer where patterns are learned
-    tf.keras.layers.Dense(128, activation='relu'),
-
-    # Layer 3: The output layer with 10 options (numbers 0 trough 9)
-    tf.keras.layers.Dense(10, activation='softmax')
+# 3. Build the True CNN Architecture
+print("Building CNN Model...")
+model = Sequential([
+    # The Convolutional Base (Feature Extraction)
+    Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=(28, 28, 1)),
+    MaxPooling2D(pool_size=(2, 2)),
+    Conv2D(64, kernel_size=(3, 3), activation='relu'),
+    MaxPooling2D(pool_size=(2, 2)),
+    
+    # The Classification Head
+    Flatten(),
+    Dense(128, activation='relu'),
+    Dense(10, activation='softmax')
 ])
 
-#Give the brain instructions on how to learn
-model.compile(
-    optimizer='adam',
-    loss='sparse_categorical_crossentropy',
-    metrics=['accuracy']
-)
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-#Train the model (the actual learning process)
-print("Starting Training...")
-model.fit(x_train, y_train, epochs=5)
+# 4. Train the model (5 epochs is usually enough for ~98% accuracy on MNIST)
+print("Training CNN... This may take a minute or two.")
+model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=5, batch_size=200)
 
-#Quiz the model on the unseen test data
-print("\nEvaluatingmodel on test data...")
-test_loss, test_acc = model.evaluate(x_test,y_test, verbose=2)
-print(f"\nFinal test accuracy: {test_acc * 100:2f}%")
-
-# Save the trained brain to a file so we can use it in our web API later
+# 5. Save the upgraded model
 model.save('handwritten_model.keras')
-print("Model saved successfully!")
+print("CNN Model saved successfully as handwritten_model.keras!")

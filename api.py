@@ -46,7 +46,7 @@ async def predict_digit(data: ImageData):
         image = ndimage.shift(image, [shift_y, shift_x])
     
     # Step D: Package it back up for the neural network
-    image_ready = image.reshape(1, 28, 28)
+    image_ready = image.reshape(1, 28, 28, 1)
     
     # Step E: Ask the brain to make a prediction
     prediction_probabilities = model.predict(image_ready)
